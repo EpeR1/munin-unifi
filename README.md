@@ -8,10 +8,10 @@ It uses SNMP v2 to get network data.
 ## Usage 
 unifi_munin - Munin plugin to monitor UBNT unifi wireless APs
 
-![munin](https://raw.githubusercontent.com/EpeR1/unifi-munin/img/munin-ssid.png)  
+![munin](http://git.bmrg.hu/unifi-munin.git/img/munin-ssid.png)  
 Number of clients
 
-![munin](https://raw.githubusercontent.com/EpeR1/unifi-munin/img/munin-netw.png)  
+![munin](http://git.bmrg.hu/unifi-munin.git/img/munin-netw.png)  
 Network usage
 
 
@@ -39,7 +39,7 @@ The following environment variables are used:
       timeout           -   Munin-update timeout for this plugin.  
       env.controller    -   The unifi controller hostname/ip.  
       env.devices       -   A "space" separated list of the hostnames or IP addresses of wireless APs.  
-      env.timeout       -   The maximum timeout in milliseconds of SNMP requests. (Be careful of munin max update time!).  
+      env.timeout       -   The maximum timeout in milliseconds of SNMP requests. (munin running time!).  
       env.retry         -   Number of retry after failed/time out SNMP requets.  
       env.devnetw       -   The network of the APs. (It is expreimental yet.)  
 
