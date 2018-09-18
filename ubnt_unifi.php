@@ -1,10 +1,11 @@
 #!/usr/bin/php
 <?php
 
-// Munin monitoring plugin for Ubiquity Unifi AP system.
+// Munin monitoring plugin for Ubiquiti Unifi AP system.
 
 //$controller = "unifi.company.com";
 //$hosts = "ap01.wireless.company.lan ap02.wireless.company.lan ap03.wireless.company.lan ap04.wireless.company.lan";
+
 
 $controller = getenv('controller');
 $hosts = getenv('devices');
