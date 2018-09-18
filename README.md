@@ -1,18 +1,20 @@
 This is a [Munin](http://munin-monitoring.org/) plugin to monitor your [Ubiquiti Unifi](https://www.ubnt.com/products/#unifi) wireless network status.  
-It uses SNMP v2 to get network data.
+It uses SNMPv2 to get network data.
 
-**The original version of this repo is aviable here: [http://git.bmrg.hu/unifi-munin.git](http://git.bmrg.hu/unifi-munin.git/)**   
+### The original version of this repo is aviable here: [http://git.bmrg.hu/unifi-munin.git](http://git.bmrg.hu/unifi-munin.git/)   
 
-.
+
+
+
 
 ## Usage 
 unifi_munin - Munin plugin to monitor UBNT unifi wireless APs
 
+Number of Clients  
 ![munin](http://git.bmrg.hu/unifi-munin.git/img/munin-ssid.png)  
-Number of clients
 
+Network Usage  
 ![munin](http://git.bmrg.hu/unifi-munin.git/img/munin-netw.png)  
-Network usage
 
 
 
@@ -47,13 +49,13 @@ The following environment variables are used:
 Configuration example for Munin:
 
 
-`  [ubnt_unifi]`  
-`    timeout 240`  
-`    env.controller unifi.company.hu`  
-`    env.devices ap01.wl.company.lan ap02.wl.company.lan ap03.wl.company.lan 10.10.1.6 10.10.1.7 10.10.1.8 `  
-`    env.devnetw 10.10.1.10/24`  
-`    env.timeout 70`  
-`    env.retry 1`  
+     [ubnt_unifi]    
+       timeout 240  
+       env.controller unifi.company.hu  
+       env.devices ap01.wl.company.lan ap02.wl.company.lan ap03.wl.company.lan 10.10.1.6 10.10.1.7 10.10.1.8   
+       env.devnetw 10.10.1.10/24  
+       env.timeout 70  
+       env.retry 1  
 
 
 
@@ -81,4 +83,4 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-.
+
