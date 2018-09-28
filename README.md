@@ -1,7 +1,7 @@
 This is a [Munin](http://munin-monitoring.org/) plugin to monitor your [Ubiquiti Unifi](https://www.ubnt.com/products/#unifi) wireless network status.  
 It uses SNMPv2 to get network data.
 
-### The original version of this repo is aviable here: [http://git.bmrg.hu/unifi-munin.git](http://git.bmrg.hu/unifi-munin.git/)   
+### The original version of code is aviable here: [http://git.bmrg.hu/unifi-munin.git](http://git.bmrg.hu/unifi-munin.git/)   
 
 
 
@@ -21,21 +21,29 @@ Network Usage
 
 ## Installing on Debian
 
-1) Copy the **ubnt_unifi.php** into the **/usr/share/munin/plugins/** folder.  
-2) Set the rights:  
+1. Copy the **ubnt_unifi.php** into the **/usr/share/munin/plugins/** folder.  
+2. Set the rights:  
+`chmod 755 /usr/share/munin/plugins/ubnt_unifi.php`  
+3. Create a symlink to this file:  
+`ln -s /usr/share/munin/plugins/ubnt_unifi.php /etc/munin/plugins/ubnt_unifi`  
 
-     chmod 755 /usr/share/munin/plugins/ubnt_unifi.php  
-    
-3) Create a symlink to this file:  
+4. Edit the **/etc/munin/munin.conf** and **/etc/munin/plugin-conf.d/munin-node** files, add the following configuration lines.  
+5. Restart the munin, and munin-node with `/etc/init.d/munin restart` and `/etc/init.d/munin-node restart` commands.  
+6. Test the plugin with the `munin-run ubnt_unifi` command.  
+  
 
-     ln -s /usr/share/munin/plugins/ubnt_unifi.php /etc/munin/plugins/ubnt_unifi    
-    
-4) Edit the **/etc/munin/plugin-conf.d/munin-node** file, and add the following configuration lines.  
-5) Test the plugin with the `munin-run ubnt_unifi` command.
 
 ## CONFIGURATION
 
-The following environment variables are used:
+Edit the **/etc/munin/munin.conf** with the following options:  
+
+    [unifi.company.com]   #Unifi Controller hostname
+      address 127.0.0.1   #This plugin uses a wirtual munin node on localhost,
+      use_node_name no    #but don't need to use the node name.
+      timeout 240         #Timeout, while this plugin can be running.
+
+
+Edit the **/etc/munin/plugin-conf.d/munin-node**, and use the following configurations:  
 
     [ubnt_unifi]   
       timeout           -   Munin-update timeout for this plugin.  
@@ -46,12 +54,11 @@ The following environment variables are used:
       env.devnetw       -   The network of the APs. (It is expreimental yet.)  
 
   
-Configuration example for Munin:
-
+For example:
 
      [ubnt_unifi]    
        timeout 240  
-       env.controller unifi.company.hu  
+       env.controller unifi.company.com
        env.devices ap01.wl.company.lan ap02.wl.company.lan ap03.wl.company.lan 10.10.1.6 10.10.1.7 10.10.1.8   
        env.devnetw 10.10.1.10/24  
        env.timeout 70  

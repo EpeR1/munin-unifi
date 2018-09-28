@@ -184,8 +184,8 @@ function collect_netw_summary($inp,$host){	//network information
               $multiplier = 8;
               $divider = 1;
       	} else {			//because the normal INTEGER(32) would be overflowed
-              $multiplier = 8192;	// When showing the controller's summary
-              $divider = 1024;
+              $multiplier = 8*1024*1024;	// When showing the controller's summary
+              $divider = 1024*1024;
       	}
 
 
