@@ -22,13 +22,17 @@ Network Usage
 ## Installing on Debian
 
 1. Copy the **ubnt_unifi.php** into the **/usr/share/munin/plugins/** folder.  
+   
 2. Set the rights:  
 `chmod 755 /usr/share/munin/plugins/ubnt_unifi.php`  
+
 3. Create a symlink to this file:  
 `ln -s /usr/share/munin/plugins/ubnt_unifi.php /etc/munin/plugins/ubnt_unifi`  
 
 4. Edit the **/etc/munin/munin.conf** and **/etc/munin/plugin-conf.d/munin-node** files, add the following configuration lines.  
+
 5. Restart the munin, and munin-node with `/etc/init.d/munin restart` and `/etc/init.d/munin-node restart` commands.  
+
 6. Test the plugin with the `munin-run ubnt_unifi` command.  
   
 
