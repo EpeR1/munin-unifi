@@ -53,7 +53,7 @@ Edit the **/etc/munin/plugin-conf.d/munin-node**, and use the following configur
       timeout           -   Munin-update timeout for this plugin.  
       env.controller    -   The unifi controller hostname/ip.  
       env.devices       -   A "space" separated list of the hostnames or IP addresses of wireless APs.  
-      env.timeout       -   The maximum timeout in milliseconds of SNMP requests. (munin running time!).  
+      env.timeout       -   The maximum timeout in milliseconds of SNMP requests. (must enough to get all data!).  
       env.retry         -   Number of retry after failed/time out SNMP requets.  
       env.devnetw       -   The network of the APs. (It is expreimental yet.)  
 
@@ -65,7 +65,7 @@ For example:
        env.controller unifi.company.com
        env.devices ap01.wl.company.lan ap02.wl.company.lan ap03.wl.company.lan 10.10.1.6 10.10.1.7 10.10.1.8   
        env.devnetw 10.10.1.10/24  
-       env.timeout 70  
+       env.timeout 170  
        env.retry 1  
 
 
