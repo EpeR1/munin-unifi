@@ -1,5 +1,5 @@
 This is a [Munin](http://munin-monitoring.org/) plugin to monitor your [Ubiquiti Unifi](https://www.ubnt.com/products/#unifi) wireless network status.  
-It uses SNMPv2 to get network data.
+It uses SNMPv2 and php child-processes to get network data.
 
 ### The original version of code is aviable here: [http://git.bmrg.hu/unifi-munin.git](http://git.bmrg.hu/unifi-munin.git/)   
 
@@ -55,6 +55,7 @@ Edit the **/etc/munin/plugin-conf.d/munin-node**, and use the following configur
       env.devices       -   A "space" separated list of the hostnames or IP addresses of wireless APs.  
       env.timeout       -   The maximum timeout in milliseconds of SNMP requests. (must enough to get all data!).  
       env.retry         -   Number of retry after failed/time out SNMP requets.  
+      env.maxproc       -   Maximum nuber of child processes (for SNMP get)
       env.devnetw       -   The network of the APs. (It is expreimental yet.)  
 
   
@@ -64,8 +65,9 @@ For example:
        timeout 240  
        env.controller unifi.company.com
        env.devices ap01.wl.company.lan ap02.wl.company.lan ap03.wl.company.lan 10.10.1.6 10.10.1.7 10.10.1.8   
+       env.maxproc 32
        env.devnetw 10.10.1.10/24  
-       env.timeout 170  
+       env.timeout 500  
        env.retry 1  
 
 
@@ -73,7 +75,7 @@ For example:
 
 ### AUTHOR
 
-Copyright (C) 2018 Gergő J. Miklós.
+Copyright (C) 2018-2019 Gergő J. Miklós.
 
 
 

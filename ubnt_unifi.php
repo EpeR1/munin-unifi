@@ -11,7 +11,9 @@ $controller = getenv('controller');
 $hosts = getenv('devices');
 $timeout = getenv('timeout');
 $retry = getenv('retry');
-//$devnetw = getenv('devnetw');
+$maxproc = getenv('maxproc');
+$devnetw = getenv('devnet');
+
 $replace_chars = array("\"","\$","@","^","`",",","|","%",";",".","~","(",")","/","\\","{","}",":","?","[","]","=","+","#","!","-",);	// Special chars replace
 
 function print_header($inp){ // prints Munin-config data from processed data array
@@ -79,7 +81,7 @@ function collect_radio_summary($inp,$host){
                 $ret['g_multi'] = "radio_".str_replace( array(".", ":"), "_" ,$controller).".".str_replace( array(".", ":"), "_" ,$host);
 		$ret['g_controller'] = $controller;
 		$location = str_replace("\"", "", explode(": ", $inp[$host]["iso.3.6.1.2.1.1.6.0"])[1]);
-               	if( $location != "Unknown" and $location != "" ){ $ret['g_title'] = "Unifi Clients on: ".$location ; } // if the Location is not filled in Controller settings, use the hostname or ip address
+        if( $location != "Unknown" and $location != "" ){ $ret['g_title'] = "Unifi Clients on: ".$location ; } // if the Location is not filled in Controller settings, use the hostname or ip address
 		else { $ret['g_title'] = "Unifi Clients on: ".$host; };
                 $ret['g_vlabel'] = "Users";
                 $ret['g_category'] = "wl_clients_ap";
@@ -93,26 +95,26 @@ function collect_radio_summary($inp,$host){
 		$ret['g_info'] = "ubnt_wireless";
 	}
 				
-                $ret['head'][0]['name'] = "sum_clients";
-                $ret['head'][0]['label'] = "Total clients";
-                $ret['head'][0]['draw'] = "LINE1.2";
-                $ret['head'][0]['info'] = "Total Clients";
-		$ret['head'][0]['type'] = "GAUGE";
-		$ret['head'][0]['min']	= "0";
+        $ret['head'][0]['name'] = "sum_clients";
+        $ret['head'][0]['label'] = "Total clients";
+        $ret['head'][0]['draw'] = "LINE1.2";
+        $ret['head'][0]['info'] = "Total Clients";
+        $ret['head'][0]['type'] = "GAUGE";
+        $ret['head'][0]['min']	= "0";
 
-		$ret['head'][1]['name'] = "2g_clients";
-		$ret['head'][1]['label'] = "2.4Ghz";
-		$ret['head'][1]['draw'] = "LINE1.2";
-		$ret['head'][1]['info'] = "2.4Ghz Clients";
-                $ret['head'][1]['type'] = "GAUGE";
-                $ret['head'][1]['min']  = "0";
+        $ret['head'][1]['name'] = "2g_clients";
+        $ret['head'][1]['label'] = "2.4Ghz";
+        $ret['head'][1]['draw'] = "LINE1.2";
+        $ret['head'][1]['info'] = "2.4Ghz Clients";
+        $ret['head'][1]['type'] = "GAUGE";
+        $ret['head'][1]['min']  = "0";
 
-		$ret['head'][2]['name'] = "5g_clients";
-                $ret['head'][2]['label'] = "5Ghz";
-                $ret['head'][2]['draw'] = "LINE1.2";
-                $ret['head'][2]['info'] = "2.4Ghz Clients";
-                $ret['head'][2]['type'] = "GAUGE";
-                $ret['head'][2]['min']  = "0";
+        $ret['head'][2]['name'] = "5g_clients";
+        $ret['head'][2]['label'] = "5Ghz";
+        $ret['head'][2]['draw'] = "LINE1.2";
+        $ret['head'][2]['info'] = "2.4Ghz Clients";
+        $ret['head'][2]['type'] = "GAUGE";
+        $ret['head'][2]['min']  = "0";
 
 
 	if(isset($host) and $host !== null and $host != "" ){	// trim raw data array to current device (in $host) or use the whole array when calculating controller's data 
@@ -129,8 +131,8 @@ function collect_radio_summary($inp,$host){
 				$ret['data'][1]['name'] = "2g_clients";
 				@$ret['data'][1]['value'] += explode(": ", $inp[$key]["iso.3.6.1.4.1.41112.1.6.1.2.1.8.".$i])[1];
 			} else {													// 5Ghz clients
-				$ret['data'][2]['name'] = "5g_clients";
-                                @$ret['data'][2]['value'] += explode(": ", $inp[$key]["iso.3.6.1.4.1.41112.1.6.1.2.1.8.".$i])[1];
+                $ret['data'][2]['name'] = "5g_clients";
+                @$ret['data'][2]['value'] += explode(": ", $inp[$key]["iso.3.6.1.4.1.41112.1.6.1.2.1.8.".$i])[1];
 			}
 		}
                 $ret['data'][0]['name'] = "sum_clients";
@@ -157,8 +159,8 @@ function collect_radio_summary($inp,$host){
                                                         "label" => str_replace("\"", "",explode(": ", $inp[$key]["iso.3.6.1.4.1.41112.1.6.1.2.1.6.".$i])[1] ),
                                                         "draw"  => "LINE1.2",
                                                         "info"  => explode(": ", $inp[$key]["iso.3.6.1.4.1.41112.1.6.1.2.1.6.".$i])[1],
-							"type"	=> "GAUGE",
-							"min"	=> "0",
+                                                        "type"	=> "GAUGE",
+                                                        "min"	=> "0",
                                                 );
 
                         }
@@ -184,8 +186,8 @@ function collect_netw_summary($inp,$host){	//network information
               $multiplier = 8;
               $divider = 1;
       	} else {			//because the normal INTEGER(32) would be overflowed
-              $multiplier = 8*4*1024;	// When showing the controller's summary
-              $divider = 4*1024;
+              $multiplier = 8*1024*4;	// When showing the controller's summary
+              $divider = 1024*4;
       	}
 
 
@@ -198,7 +200,7 @@ function collect_netw_summary($inp,$host){	//network information
                 $ret['g_vlabel'] = "bits in(-) / out(+) per second";
                 $ret['g_category'] = "Wl_netw_ap";
                 $ret['g_info'] = "ubnt_network";
-		$ret['g_order'] = "rx_all tx_all rx_2g tx_2g rx_5g tx_5g";
+                $ret['g_order'] = "rx_all tx_all rx_2g tx_2g rx_5g tx_5g";
 
         } else {
                 $ret['g_multi'] = "netw_".str_replace( array(".", ":"), "_" ,$controller);
@@ -207,7 +209,7 @@ function collect_netw_summary($inp,$host){	//network information
                 $ret['g_vlabel'] = "bits in(-) / out(+) per second";
                 $ret['g_category'] = "Wl_netw_all";
                 $ret['g_info'] = "ubnt_network";
-		$ret['g_order'] = "rx_all tx_all rx_2g tx_2g rx_5g tx_5g";
+                $ret['g_order'] = "rx_all tx_all rx_2g tx_2g rx_5g tx_5g";
         }
          
                 $ret['head'][0]['name'] = "rx_all";
@@ -216,9 +218,9 @@ function collect_netw_summary($inp,$host){	//network information
                 $ret['head'][0]['info'] = "Total Received";
                 $ret['head'][0]['type'] = "DERIVE";
                 $ret['head'][0]['min']  = "0";
-		$ret['head'][0]['graph']  = "no";
-		$ret['head'][0]['cdef']  = "unifi_rx_all,$multiplier,*";
-		$ret['head'][0]['max']  = "1000000000";
+                $ret['head'][0]['graph']  = "no";
+                $ret['head'][0]['cdef']  = "unifi_rx_all,$multiplier,*";
+                $ret['head'][0]['max']  = "1000000000";
 
                 $ret['head'][1]['name'] = "tx_all";
                 $ret['head'][1]['label'] = "Total (bps)";
@@ -228,7 +230,7 @@ function collect_netw_summary($inp,$host){	//network information
                 $ret['head'][1]['min']  = "0";
                 $ret['head'][1]['cdef']  = "unifi_tx_all,$multiplier,*";
                 $ret['head'][1]['max']  = "1000000000";
-		$ret['head'][1]['negative']  = "unifi_rx_all";
+                $ret['head'][1]['negative']  = "unifi_rx_all";
 
                 $ret['head'][2]['name'] = "rx_2g";
                 $ret['head'][2]['label'] = "2G (bps)";
@@ -248,7 +250,7 @@ function collect_netw_summary($inp,$host){	//network information
                 $ret['head'][3]['min']  = "0";
                 $ret['head'][3]['cdef']  = "unifi_tx_2g,$multiplier,*";
                 $ret['head'][3]['max']  = "1000000000";
-		$ret['head'][3]['negative']  = "unifi_rx_2g";
+                $ret['head'][3]['negative']  = "unifi_rx_2g";
 
                 $ret['head'][4]['name'] = "rx_5g";
                 $ret['head'][4]['label'] = "5G (bps)";
@@ -256,7 +258,7 @@ function collect_netw_summary($inp,$host){	//network information
                 $ret['head'][4]['info'] = "Total Received";
                 $ret['head'][4]['type'] = "DERIVE";
                 $ret['head'][4]['min']  = "0";
-		$ret['head'][4]['graph']  = "no";
+                $ret['head'][4]['graph']  = "no";
                 $ret['head'][4]['cdef']  = "unifi_rx_5g,$multiplier,*";
                 $ret['head'][4]['max']  = "1000000000";
 
@@ -268,7 +270,7 @@ function collect_netw_summary($inp,$host){	//network information
                 $ret['head'][5]['min']  = "0";
                 $ret['head'][5]['cdef']  = "unifi_tx_5g,$multiplier,*";
                 $ret['head'][5]['max']  = "1000000000";
-		$ret['head'][5]['negative']  = "unifi_rx_5g";
+                $ret['head'][5]['negative']  = "unifi_rx_5g";
 
 
         foreach($inp as $key => $val){
@@ -277,7 +279,7 @@ function collect_netw_summary($inp,$host){	//network information
                         if( explode(": ", $inp[$key]["iso.3.6.1.4.1.41112.1.6.1.2.1.4.".$i])[1] < 15 ){                                 //2.4Ghz client
                                 $ret['data'][2]['name'] = "rx_2g";		       
                                 @$ret['data'][2]['value'] += round((explode(": ", $inp[$key]["iso.3.6.1.4.1.41112.1.6.1.2.1.10.".$i])[1]) / $divider);
-				$ret['data'][3]['name'] = "tx_2g";
+                                $ret['data'][3]['name'] = "tx_2g";
                                 @$ret['data'][3]['value'] += round((explode(": ", $inp[$key]["iso.3.6.1.4.1.41112.1.6.1.2.1.16.".$i])[1]) / $divider);
 
                         } else {                                                                                                        // 5Ghz clients
@@ -310,15 +312,15 @@ function collect_netw_summary($inp,$host){	//network information
                                                         "value" => round((explode(": ", $inp[$key]["iso.3.6.1.4.1.41112.1.6.1.2.1.10.".$i])[1]) / $divider) ,
                                                 );
                                 $ret['head'][] = array( "name"  => "rx_".str_replace($replace_chars, "_", explode(": ", $inp[$key]["iso.3.6.1.4.1.41112.1.6.1.2.1.6.".$i])[1]),
-                                                        "label" => "RX_".str_replace("\"", "",explode(": ", $inp[$key]["iso.3.6.1.4.1.41112.1.6.1.2.1.6.".$i])[1] )."(bps)",
+                                                        "label" => "RX_".str_replace("\"", "",explode(": ", $inp[$key]["iso.3.6.1.4.1.41112.1.6.1.2.1.6.".$i])[1] )." (bps)",
                                                         "draw"  => "LINE1.2",
                                                         "info"  => "Rx_".explode(": ", $inp[$key]["iso.3.6.1.4.1.41112.1.6.1.2.1.6.".$i])[1],
                                                         "type"  => "DERIVE",
                                                         "min"   => "0",
-							"graph"	=> "no",
-							"cdef"	=> "unifi_rx_".str_replace($replace_chars, "_", explode(": ", $inp[$key]["iso.3.6.1.4.1.41112.1.6.1.2.1.6.".$i])[1]).",$multiplier,*",
-							"max"	=> "1000000000",
-					);
+                                                        "graph"	=> "no",
+                                                        "cdef"	=> "unifi_rx_".str_replace($replace_chars, "_", explode(": ", $inp[$key]["iso.3.6.1.4.1.41112.1.6.1.2.1.6.".$i])[1]).",$multiplier,*",
+                                                        "max"	=> "1000000000",
+                                                );
 
                         }
 
@@ -334,7 +336,7 @@ function collect_netw_summary($inp,$host){	//network information
 			} else {       //ssid not found, new record
                     		$ret['data'][] = array( "name" => "tx_".str_replace($replace_chars, "_", explode(": ", $inp[$key]["iso.3.6.1.4.1.41112.1.6.1.2.1.6.".$i])[1]),
                                 			"value" => round((explode(": ", $inp[$key]["iso.3.6.1.4.1.41112.1.6.1.2.1.16.".$i])[1]) / $divider) ,
-						);
+                                            );
                     		$ret['head'][] = array( "name"  => "tx_".str_replace($replace_chars, "_", explode(": ", $inp[$key]["iso.3.6.1.4.1.41112.1.6.1.2.1.6.".$i])[1]),
                         				"label" => "".str_replace("\"", "",explode(": ", $inp[$key]["iso.3.6.1.4.1.41112.1.6.1.2.1.6.".$i])[1] )." (bps)",
                                         	    	"draw"  => "LINE1.2",
@@ -343,8 +345,8 @@ function collect_netw_summary($inp,$host){	//network information
                                         	    	"min"   => "0",
                                             		"cdef"  => "unifi_tx_".str_replace($replace_chars, "_", explode(": ", $inp[$key]["iso.3.6.1.4.1.41112.1.6.1.2.1.6.".$i])[1]).",$multiplier,*",
                                             		"max"   => "1000000000",
-							"negative" => "unifi_rx_".str_replace($replace_chars, "_", explode(": ", $inp[$key]["iso.3.6.1.4.1.41112.1.6.1.2.1.6.".$i])[1]),
-                            			);
+                                                    "negative" => "unifi_rx_".str_replace($replace_chars, "_", explode(": ", $inp[$key]["iso.3.6.1.4.1.41112.1.6.1.2.1.6.".$i])[1]),
+                                            );
             		}
 
 
@@ -367,7 +369,6 @@ if($mask != 0 ){
 	}
 }
 
-
 foreach($hosts as $key => $val){			// delete addresses which are given by hostname
 	if(in_array(gethostbyname($val), $hosts2)){
 		unset($hosts2[ array_keys($hosts2, gethostbyname($val))[0] ]);
@@ -375,28 +376,124 @@ foreach($hosts as $key => $val){			// delete addresses which are given by hostna
 
 }
 $hosts = array_merge($hosts, $hosts2);
+unset($hosts2);
 
-$raw=array();
-foreach($hosts as $key => $val){			// get raw snmp data from unifi devices
-	if($hosts[$key] == ""){
-		unset($hosts[$key]);
+$numhost = count($hosts);
+$shm_key = ftok($argv[0], 'c');
+$shm = shmop_open($shm_key, "c", 0640, ceil($numhost/$maxproc)*32768);
+$sf = sem_get($shm_key,1,0640,1);
+$child = array();
+$raw = array();
+$hostsr = $hosts;
+unset($hosts);
+$hostst = array();
+
+
+for($i=0,$j=0; $i<$numhost; $i++){	//Sorting addresses for child-processes
+	
+	if($j >= $maxproc){		//With permutation
+	    $j = 0;
 	}
-	if($val != "") {
-		$raw[$val] = @snmp2_real_walk($val, "public", ".1.3.6.1.4.1.41112.1.6.1.2.1", $timeout*1000, $retry ); 		// wl network info
-		$raw[$val]["iso.3.6.1.2.1.1.6.0"] = @snmp2_get($val, "public", ".1.3.6.1.2.1.1.6.0", $timeout*1000, $retry ) ;	// location info
-		$raw[$val]["iso.3.6.1.2.1.1.1.0"] = @snmp2_get($val, "public", ".1.3.6.1.2.1.1.1.0", $timeout*1000, $retry ) ;	// descr. info
+	if(array_key_exists($j, $hostst) === FALSE){
+		$hostst[$j] = array();
 	}
-        if( !isset($raw[$val]["iso.3.6.1.4.1.41112.1.6.1.2.1.1.1"]) ){
-                unset($raw[$val]);
-		unset($hosts[$key]);
-        }
+
+	$hostst[$j] = array_merge($hostst[$j], array($hostsr[$i]));    //With permutation
+	$j++;
 }
 
 
+
+
+for ($p=0; $p<$maxproc; $p++){		//Starts child processes to retrieve SNMP data.
+	
+	unset($hosts);
+	$hosts = array();
+	if(array_key_exists($p,$hostst)){
+		$hosts = $hostst[$p];
+	}
+
+
+        $pid = pcntl_fork();
+
+        if($pid == -1){
+             die('could not fork');
+        }
+
+        else if($pid){			// we are the parent process
+                $child[$p] = $pid;
+        } 
+
+	else {			// child
+		$raw=array();
+		foreach($hosts as $key => $val){			// get raw snmp data from unifi devices
+			if($hosts[$key] == ""){
+				unset($hosts[$key]);
+			}
+			if($val != "") {
+				$raw[$val] = @snmp2_real_walk($val, "public", ".1.3.6.1.4.1.41112.1.6.1.2.1", $timeout*1000, $retry ); 		// wl network info
+				$raw[$val]["iso.3.6.1.2.1.1.6.0"] = @snmp2_get($val, "public", ".1.3.6.1.2.1.1.6.0", $timeout*1000, $retry ) ;	// location info
+				$raw[$val]["iso.3.6.1.2.1.1.1.0"] = @snmp2_get($val, "public", ".1.3.6.1.2.1.1.1.0", $timeout*1000, $retry ) ;	// descr. info
+			}
+		        if( !isset($raw[$val]["iso.3.6.1.4.1.41112.1.6.1.2.1.1.1"]) ){
+                        unset($raw[$val]);
+                        unset($hosts[$key]);
+		        }
+			
+			$null="";
+			for($f=0; $f<(32768 - strlen(json_encode($raw))); $f++)
+			{
+				$null .= "\0";   	//Because the json_decode() error.
+			}
+
+			sem_acquire($sf);
+			while(ord(shmop_read($shm, 0, 0)) ) {continue;}  //waiting for master to pull the data
+			shmop_write($shm, json_encode($raw).$null, 0);
+			sem_release($sf);
+		}
+	exit;
+	}
+
+}
+unset($hostst);
+unset($hosts);
+
+function numchild($child, $n){	//How many child process is alive
+        $l=0;
+        for($i=0; $i<$n; $i++){
+            if($child[$i] > 0){
+                $l++;
+            }
+        }
+        return $l;
+}
+
+
+while(numchild($child, $maxproc)){	//Receive the raw data segments and wait for child processes
+
+	for($p=0; $p<$maxproc; $p++){
+		if( abs($pid = pcntl_waitpid($child[$p], $status, WNOHANG)) > 0) {//Protect against Zombie children
+			$child[$p] = 0;
+		}
+    }
+
+	$ret = shmop_read($shm, 0, 0);  //Read from shared memory
+	if(ord($ret)){
+        $ret = preg_replace('/[[:cntrl:]]/', '', $ret);         // for json_decode
+        $raw = array_merge($raw, json_decode($ret, true));      
+        shmop_write($shm,"\0\0\0\0\0", 0);
+	}
+	usleep(100);	//
+}
+
+sem_remove($sf);
+shmop_delete($shm);
+shmop_close($shm);
+$hosts = $hostsr;
 //print_r($raw);
 //print_r($hosts);
-//$valami = collect_netw_summary($raw,"ap12.wireless.lan");
-//print_r($valami);
+//$test = collect_netw_summary($raw,"ap12.wireless.lan");
+//print_r($test);
 
 
 if (isset($argv[1]) and $argv[1] == "config"){			// munin config
