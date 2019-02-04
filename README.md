@@ -65,11 +65,10 @@ For example:
        timeout 240  
        env.controller unifi.company.com
        env.devices ap01.wl.company.lan ap02.wl.company.lan ap03.wl.company.lan 10.10.1.6 10.10.1.7 10.10.1.8   
-       env.maxproc 32
        env.devnetw 10.10.1.10/24  
-       env.timeout 500  
-       env.retry 1  
-
+       env.timeout 850  
+       env.retry 3  
+       env.maxproc 32  
 
 
 

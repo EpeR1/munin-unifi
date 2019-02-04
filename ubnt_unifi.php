@@ -441,14 +441,14 @@ for ($p=0; $p<$maxproc; $p++){		//Starts child processes to retrieve SNMP data.
 		        }
 			
 			$null="";
-			for($f=0; $f<(32768 - strlen(json_encode($raw))); $f++)
+			for($f=0; $f<(32768 - strlen(@json_encode($raw))); $f++)
 			{
 				$null .= "\0";   	//Because the json_decode() error.
 			}
 
 			sem_acquire($sf);
 			while(ord(shmop_read($shm, 0, 0)) ) {continue;}  //waiting for master to pull the data
-			shmop_write($shm, json_encode($raw).$null, 0);
+			shmop_write($shm, @json_encode($raw).$null, 0);
 			sem_release($sf);
 		}
 	exit;
@@ -480,7 +480,7 @@ while(numchild($child, $maxproc)){	//Receive the raw data segments and wait for 
 	$ret = shmop_read($shm, 0, 0);  //Read from shared memory
 	if(ord($ret)){
         $ret = preg_replace('/[[:cntrl:]]/', '', $ret);         // for json_decode
-        $raw = array_merge($raw, json_decode($ret, true));      
+        $raw = @array_merge($raw, @json_decode($ret, true));      
         shmop_write($shm,"\0\0\0\0\0", 0);
 	}
 	usleep(100);	//
@@ -494,6 +494,10 @@ $hosts = $hostsr;
 //print_r($hosts);
 //$test = collect_netw_summary($raw,"ap12.wireless.lan");
 //print_r($test);
+
+if(!is_array($raw)){
+    die();
+}
 
 
 if (isset($argv[1]) and $argv[1] == "config"){			// munin config
