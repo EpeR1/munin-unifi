@@ -81,11 +81,11 @@ function count_wl_networks($inp){ //Count wireless networks from interfade data
 function collect_radio_summary($inp,$host){
 	global $controller, $replace_chars;
 	$ret = array();
-        if(!array_key_exists($host, $inp)){
-                return $ret;
-        }
 
 	if(isset($host) and $host !== null and $host != "" ){
+	        if(!array_key_exists($host, $inp)){
+                   return $ret;
+	        }
                 $ret['g_multi'] = "radio_".str_replace( array(".", ":"), "_" ,$controller).".".str_replace( array(".", ":"), "_" ,$host);
 		$ret['g_controller'] = $controller;
 		$location = str_replace("\"", "", explode(": ", $inp[$host]["iso.3.6.1.2.1.1.6.0"])[1]);
@@ -185,20 +185,20 @@ return $ret;
 function collect_netw_summary($inp,$host){	//network information
         global $controller, $replace_chars;
         $ret = array();
-        if(!array_key_exists($host, $inp)){
-                return $ret;
-        }
 	
 	if(isset($host) and $host !== null and $host != "" ){ // When showing the Ap's summary.
+	      if(!array_key_exists($host, $inp)){
+                return $ret;
+	      }
               $temp = $inp;
               unset($inp);
               $inp = array($host => $temp[$host]);
               unset($temp);
               $multiplier = 8;
               $divider = 1;
-      	} else {			//because the normal INTEGER(32) would be overflowed
+      	} else {			
               $multiplier = 8*1024*4;	// When showing the controller's summary
-              $divider = 1024*4;
+              $divider = 1024*4;	//because the normal INTEGER(32) would be overflowed
       	}
 
 
