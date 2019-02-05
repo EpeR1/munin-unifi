@@ -44,6 +44,10 @@ function print_header($inp){ // prints Munin-config data from processed data arr
 
 
 function print_data($inp) {
+
+        if(!array_key_exists('data', $inp) or !array_key_exists('g_multi', $inp)){
+                return;
+        }
 	
 	$pf  = "multigraph unifi_".$inp['g_multi']."\n";
 	foreach($inp['data'] as $key => $val){
@@ -77,6 +81,10 @@ function count_wl_networks($inp){ //Count wireless networks from interfade data
 function collect_radio_summary($inp,$host){
 	global $controller, $replace_chars;
 	$ret = array();
+        if(!array_key_exists($host, $inp)){
+                return $ret;
+        }
+
 	if(isset($host) and $host !== null and $host != "" ){
                 $ret['g_multi'] = "radio_".str_replace( array(".", ":"), "_" ,$controller).".".str_replace( array(".", ":"), "_" ,$host);
 		$ret['g_controller'] = $controller;
@@ -177,6 +185,9 @@ return $ret;
 function collect_netw_summary($inp,$host){	//network information
         global $controller, $replace_chars;
         $ret = array();
+        if(!array_key_exists($host, $inp)){
+                return $ret;
+        }
 	
 	if(isset($host) and $host !== null and $host != "" ){ // When showing the Ap's summary.
               $temp = $inp;
