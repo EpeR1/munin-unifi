@@ -1,7 +1,7 @@
 This is a [Munin](http://munin-monitoring.org/) plugin to monitor your [Ubiquiti Unifi](https://www.ubnt.com/products/#unifi) wireless network status.  
 It uses SNMPv2 and php child-processes to get network data.
 
-### The original version of code is aviable here: [http://git.bmrg.hu/pub/unifi-munin.git](http://git.bmrg.hu/pub/unifi-munin.git/)   
+### The original version of code is aviable here: [https://git.bmrg.hu/pub/munin-unifi.git/](https://git.bmrg.hu/pub/munin-unifi.git/)   
 
 
 
@@ -11,12 +11,13 @@ It uses SNMPv2 and php child-processes to get network data.
 unifi_munin - Munin plugin to monitor UBNT unifi wireless APs
 
 Number of Clients  
-![munin](http://git.bmrg.hu/images/unifi-munin.git/munin-ssid.png)  
+![munin](http://git.bmrg.hu/images/munin-unifi.git/munin-ssid.png)  
 
 Network Usage  
-![munin](http://git.bmrg.hu/images/unifi-munin.git/munin-netw.png)  
+![munin](http://git.bmrg.hu/images/munin-unifi.git/munin-netw.png)  
 
-
+Ap-response time  
+![munin](http://git.bmrg.hu/images/munin-unifi.git/munin-ping.png)
 
 
 ## Installing on Debian
@@ -74,7 +75,7 @@ For example:
 
 ### AUTHOR
 
-Copyright (C) 2018-2019 Gergő J. Miklós.
+Copyright (C) 2018-2020 Gergő J. Miklós.
 
 
 
