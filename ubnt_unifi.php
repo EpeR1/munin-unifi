@@ -211,7 +211,7 @@ function collect_netw_summary($inp,$host){	//network information
                 $ret['g_vlabel'] = "bits in(-) / out(+) per second";
                 $ret['g_category'] = "Wl_netw_ap";
                 $ret['g_info'] = "ubnt_network";
-                $ret['g_order'] = "rx_all tx_all rx_2g tx_2g rx_5g tx_5g";
+                $ret['g_order'] = "unifi_rx_all unifi_tx_all unifi_rx_2g unifi_tx_2g unifi_rx_5g unifi_tx_5g";
 
         } else {
                 $ret['g_multi'] = "netw_".str_replace( array(".", ":"), "_" ,$controller);
@@ -220,7 +220,7 @@ function collect_netw_summary($inp,$host){	//network information
                 $ret['g_vlabel'] = "bits in(-) / out(+) per second";
                 $ret['g_category'] = "Wl_netw_all";
                 $ret['g_info'] = "ubnt_network";
-                $ret['g_order'] = "rx_all tx_all rx_2g tx_2g rx_5g tx_5g";
+                $ret['g_order'] = "unifi_rx_all unifi_tx_all unifi_rx_2g unifi_tx_2g unifi_rx_5g unifi_tx_5g";
         }
          
                 $ret['head'][0]['name'] = "rx_all";
@@ -369,6 +369,73 @@ return $ret;
 }
 
 
+function collect_response_time($inp,$host){			//Calculates the response_time array from raw data
+        global $controller, $replace_chars, $hosts;
+        $ret = array();
+
+        if(isset($host) and $host !== null and $host != "" ){
+                if(!array_key_exists($host, $inp)){
+                   return $ret;
+                }
+                $ret['g_multi'] = "ping_".str_replace( array(".", ":"), "_" ,$controller).".".str_replace( array(".", ":"), "_" ,$host);
+                $ret['g_controller'] = $controller;
+                $location = str_replace("\"", "", explode(": ", $inp[$host]["iso.3.6.1.2.1.1.6.0"])[1]);
+		if( $location != "Unknown" and $location != "" ){ $ret['g_title'] = "AP response time on: ".$location ; } // if the Location is not filled in Controller settings, use t
+                else { $ret['g_title'] = "AP response time on: ".$host; };
+                $ret['g_vlabel'] = "Roundtrip time (seconds)";
+                $ret['g_category'] = "wl_ping_ap";
+                $ret['g_info'] = "ubnt_wireless";
+//		$ret['g_order'] = 'unifi_ping_time';
+        } else {
+                $ret['g_multi'] = "ping_".str_replace( array(".", ":"), "_" ,$controller);
+                $ret['g_controller'] = $controller;
+                $ret['g_title'] = "AP response time on: $controller (all)";
+                $ret['g_vlabel'] = "Roundtrip time (seconds)";
+                $ret['g_category'] = "Wl_ping_all";
+                $ret['g_info'] = "ubnt_wireless";	
+		$ret['g_order'] = '';
+	        foreach($hosts as $key => $val){		//prints the host names on summary
+        		$ret['g_order'] .= "unifi_ping_".str_replace( array(".", ":"), "_" ,$val)." ";
+        	}
+	}
+
+
+
+	if(isset($host) and $host !== null and $host != "" ){   // chunks the raw data to the current AP's data only
+		$temp = $inp;
+		unset($inp);
+		$inp = array($host => $temp[$host]);
+		unset($temp);
+        } 
+
+
+	foreach($inp as $key => $val){
+
+//		if( (isset($host) and $host !== null and $host != "") ){	//Replace label's text on AP's graph
+//			$key = "time";
+//			$label= "Response Time";
+//		} else {
+//			$label = $key;
+//		}
+		$ret['head'][$key]['name'] = "ping_".str_replace( array(".", ":"), "_" ,$key);
+		$ret['head'][$key]['label'] = $key;
+		$ret['head'][$key]['draw'] = "LINE1.2";
+		$ret['head'][$key]['info'] = "Response Time";
+		$ret['head'][$key]['type'] = "GAUGE";
+		$ret['head'][$key]['min']  = "0";
+
+		$ret['data'][$key]['name'] = "ping_".str_replace( array(".", ":"), "_" ,$key);
+		$ret['data'][$key]['value'] = round($val["response_time"], 7);        
+	}
+
+return $ret;
+}
+
+
+
+
+
+
 $hosts = explode(" ", $hosts);
 $netw = @explode('/', $devnetw)[0];
 $mask = @explode('/', $devnetw)[1];
@@ -442,9 +509,12 @@ for ($p=0; $p<$maxproc; $p++){		//Starts child processes to retrieve SNMP data.
 				unset($hosts[$key]);
 			}
 			if($val != "") {
+				$begin = microtime(TRUE);
 				$raw[$val] = @snmp2_real_walk($val, "public", ".1.3.6.1.4.1.41112.1.6.1.2.1", $timeout*1000, $retry ); 		// wl network info
+				//$raw[$val]["response_time"] = abs($begin - microtime(TRUE));							// SNMP response time (msec)
 				$raw[$val]["iso.3.6.1.2.1.1.6.0"] = @snmp2_get($val, "public", ".1.3.6.1.2.1.1.6.0", $timeout*1000, $retry ) ;	// location info
 				$raw[$val]["iso.3.6.1.2.1.1.1.0"] = @snmp2_get($val, "public", ".1.3.6.1.2.1.1.1.0", $timeout*1000, $retry ) ;	// descr. info
+				$raw[$val]["response_time"] = abs($begin - microtime(TRUE));  //Microtime: return in mSec
 			}
 		        if( !isset($raw[$val]["iso.3.6.1.4.1.41112.1.6.1.2.1.1.1"]) ){
                         unset($raw[$val]);
@@ -503,7 +573,9 @@ shmop_close($shm);
 $hosts = $hostsr;
 //print_r($raw);
 //print_r($hosts);
-//$test = collect_netw_summary($raw,"ap12.wireless.lan");
+//$test = collect_netw_summary($raw, "ap12.wireless.lan");
+//print_r($test);
+//$test = collect_response_time($raw, "ap12.wireless.lan");
 //print_r($test);
 
 if(!is_array($raw)){
@@ -519,7 +591,12 @@ if (isset($argv[1]) and $argv[1] == "config"){			// munin config
         print_header(collect_netw_summary($raw,null));
         foreach($hosts as $key => $val){
                 print_header(collect_netw_summary($raw,$val));
+        } 
+	print_header(collect_response_time($raw,null));
+        foreach($hosts as $key => $val){
+                print_header(collect_response_time($raw,$val));
         }
+
 
 
 } else {							// munin data
@@ -531,10 +608,14 @@ if (isset($argv[1]) and $argv[1] == "config"){			// munin config
         foreach($hosts as $key => $val){
                 print_data(collect_netw_summary($raw,$val));
         }
-
+	print_data(collect_response_time($raw,null));
+	foreach($hosts as $key => $val){
+		print_data(collect_response_time($raw,$val));
+	}
 }
 
 
 echo "\n";
 
 ?>
+
