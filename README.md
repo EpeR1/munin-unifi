@@ -1,7 +1,7 @@
 ### This is a [Munin](http://munin-monitoring.org/) plugin to monitor your [Ubiquiti Unifi](https://www.ubnt.com/products/#unifi) wireless AP status.  
-* It queryes the APs via SNMPv2 and converts result for munin.  
+* It queries the AP's via SNMPv2 and converts result for munin.  
 * Requires:  
-    * Enabled SNMP on APs.  
+    * Enabled SNMP on AP's.  
     * Network access from munin-server to AP's network.  
 * It can use php child-processes to get responses faster.  
 * If snmp oids are different on your product, you can use  
