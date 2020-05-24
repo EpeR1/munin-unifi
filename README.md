@@ -1,10 +1,9 @@
-This is a [Munin](http://munin-monitoring.org/) plugin to monitor your [Ubiquiti Unifi](https://www.ubnt.com/products/#unifi) wireless AP status.  
-It queryes the APs via SNMPv2 and converts result for munin.  
-It can use php child-processes to get responses faster.  
-It is tested with AP-AC-PRO (up to now).  
-If snmp oids are different on your product, you can use `snmpwalk -v2c -c public ap01.network.lan 'iso.3.6.1.4.1.41112'` command to clarify them.  
-Official UBNT Unifi SNMP MIBs are available here: [Forum](https://community.ui.com/questions/MIBs-/a0365341-b14f-441b-9484-fd4be414d281) 
-
+### This is a [Munin](http://munin-monitoring.org/) plugin to monitor your [Ubiquiti Unifi](https://www.ubnt.com/products/#unifi) wireless AP status.  
+* It queryes the APs via SNMPv2 and converts result for munin.  
+* It can use php child-processes to get responses faster.  
+* If snmp oids are different on your product, you can use `snmpwalk -v2c -c public ap01.network.lan 'iso.3.6.1.4.1.41112'` command to clarify them.  
+* Official UBNT Unifi SNMP MIBs are available here: [Forum](https://community.ui.com/questions/MIBs-/a0365341-b14f-441b-9484-fd4be414d281) 
+* Tested with: AP-AC-PRO (up to now).
 
 
 ## Usage 
