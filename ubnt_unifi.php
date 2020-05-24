@@ -511,28 +511,27 @@ for ($p=0; $p<$maxproc; $p++){		//Starts child processes to retrieve SNMP data.
 			if($val != "") {
 				$begin = microtime(TRUE);
 				$raw[$val] = @snmp2_real_walk($val, "public", ".1.3.6.1.4.1.41112.1.6.1.2.1", $timeout*1000, $retry ); 		// wl network info
-				//$raw[$val]["response_time"] = abs($begin - microtime(TRUE));							// SNMP response time (msec)
+				//$raw[$val]["response_time"] = abs($begin - microtime(TRUE));							// If we count the time of the first response
 				$raw[$val]["iso.3.6.1.2.1.1.6.0"] = @snmp2_get($val, "public", ".1.3.6.1.2.1.1.6.0", $timeout*1000, $retry ) ;	// location info
 				$raw[$val]["iso.3.6.1.2.1.1.1.0"] = @snmp2_get($val, "public", ".1.3.6.1.2.1.1.1.0", $timeout*1000, $retry ) ;	// descr. info
-				$raw[$val]["response_time"] = abs($begin - microtime(TRUE));  //Microtime: return in mSec
+				$raw[$val]["response_time"] = abs($begin - microtime(TRUE));  							// Or the time of all responses.
 			}
-		        if( !isset($raw[$val]["iso.3.6.1.4.1.41112.1.6.1.2.1.1.1"]) ){
-                        unset($raw[$val]);
-                        unset($hosts[$key]);
+		        if( !isset($raw[$val]["iso.3.6.1.4.1.41112.1.6.1.2.1.1.1"]) ){ // Check if AP is alive
+                                unset($raw[$val]);
+                                unset($hosts[$key]);
 		        }
 			
 			$null="";
-			for($f=0; $f<(32768 - strlen(@json_encode($raw))); $f++)
-			{
-				$null .= "\0";   	//Because the json_decode() error.
+			for($f=0; $f<(32768 - strlen(@json_encode($raw))); $f++){ //Because the json_decode() error, clear the remain parts.
+				$null .= "\0";   	
 			}
 
-			sem_acquire($sf);
-			while(ord(shmop_read($shm, 0, 0)) ) {continue;}  //waiting for master to pull the data
+			sem_acquire($sf);				//Get the seamphore
+			while(ord(shmop_read($shm, 0, 0)) ) {continue;} //waiting for master to pull the data
 			shmop_write($shm, @json_encode($raw).$null, 0);
 			sem_release($sf);
 		}
-	exit;
+	        exit;
 	}
 
 }
@@ -556,15 +555,15 @@ while(numchild($child, $maxproc)){	//Receive the raw data segments and wait for 
 		if( abs($pid = pcntl_waitpid($child[$p], $status, WNOHANG)) > 0) {//Protect against Zombie children
 			$child[$p] = 0;
 		}
-    }
+        }
 
 	$ret = shmop_read($shm, 0, 0);  //Read from shared memory
 	if(ord($ret)){
-        $ret = preg_replace('/[[:cntrl:]]/', '', $ret);         // for json_decode
-        $raw = @array_merge($raw, @json_decode($ret, true));      
-        shmop_write($shm,"\0\0\0\0\0", 0);
+                $ret = preg_replace('/[[:cntrl:]]/', '', $ret);         // for json_decode
+                $raw = @array_merge($raw, @json_decode($ret, true));      
+                shmop_write($shm,"\0\0\0\0\0", 0);
 	}
-	usleep(100);	//
+	usleep(100);	//Less cpu load
 }
 
 sem_remove($sf);
@@ -597,7 +596,26 @@ if (isset($argv[1]) and $argv[1] == "config"){			// munin config
                 print_header(collect_response_time($raw,$val));
         }
 
+} else if(isset($argv[1]) and $argv[1] == "debug"){
+	echo "\n\n DEBUG INFORMATION FROM munin_unifi \n\n";
+	echo "Configurations:\n";
+	echo "\tController: ".$controller."\n";
+	echo "\tTimeout: ".$timeout."\n";
+	echo "\tRetry: ".$retry."\n";
+	echo "\tMaxproc: ".$maxproc."\n";
+	echo "\tDevices_network: ".$devnetw."\n";
+	echo "\tDevice_hosts: \n";
+	print_r($hosts);
 
+	echo "\nInternal: \n";
+	echo "\tShared_mem_key: ".$shm_key."\n";
+	echo "\nRAW\n";
+	print_r($raw);
+
+	echo "\nController:\n";
+	print_r(collect_radio_summary($raw,null));
+	print_r(collect_netw_summary($raw,null));
+	print_r(collect_response_time($raw,null));
 
 } else {							// munin data
 	print_data(collect_radio_summary($raw,null));
