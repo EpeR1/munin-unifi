@@ -476,27 +476,18 @@ foreach($hosts2 as $key2 => $val2){     // Merge hosts into one
         $i++;
 }
 
-print_r($hosts);                                                                                                               /**************** */
-print_r($hosts2);                                                                                                             /**************** */                        
-print_r($hostsip);                                                                                                      /******************** */
-$hosts = array_merge($hosts, $hosts2);
+//$hosts = array_merge($hosts, $hosts2);
 unset($hosts2);
-
-echo "\nshm_open\n";                                                                                                  /***************** */
 $numhost = count($hostsip);
 $shm_key = ftok($argv[0], 'c');
 $shm = shmop_open($shm_key, "c", 0640, ceil($numhost/$maxproc)*32768);
 $sf = sem_get($shm_key,1,0640,1);
 $child = array();
 $raw = array();
-//$hostsr = $hosts;
 $hostsipr = $hostsip;
-//unset($hosts);
 unset($hostsip);
-//$hostst = array();
 $hostsipt = array();
 
-echo "\npermutation\n";                                                                                             /*************** */
 for($i=0,$j=0; $i<$numhost; $i++){	//Sorting addresses for child-processes
 	
 	if($j >= $maxproc){		//With permutation
@@ -513,7 +504,6 @@ for($i=0,$j=0; $i<$numhost; $i++){	//Sorting addresses for child-processes
 
 
 
-echo "\nfork\n";                                                                                          /************************ */
 for ($p=0; $p<$maxproc; $p++){		//Starts child processes to retrieve SNMP data.
 	
 	unset($hostsip);
@@ -577,7 +567,6 @@ function numchild($child, $n){	//How many child process is alive
         return $l;
 }
 
-echo "\nwait\n";                                                                                             /********************* */
 
 while(numchild($child, $maxproc)){	//Receive the raw data segments and wait for child processes
 
@@ -599,10 +588,9 @@ while(numchild($child, $maxproc)){	//Receive the raw data segments and wait for 
 sem_remove($sf);
 shmop_delete($shm);
 shmop_close($shm);
-//$hosts = $hostsr;
 $hostsip = $hostsipr;
 //print_r($raw);
-//print_r($hosts);
+//print_r($hostsip);
 //$test = collect_netw_summary($raw, "ap12.wireless.lan");
 //print_r($test);
 //$test = collect_response_time($raw, "ap12.wireless.lan");
@@ -612,7 +600,6 @@ if(!is_array($raw) /*|| empty($raw)*/){
         die();
 }
 
-echo "\nprocess\n";                                                                             /************************** */
 
 if (isset($argv[1]) and $argv[1] == "config"){			// munin config
 
@@ -621,11 +608,11 @@ if (isset($argv[1]) and $argv[1] == "config"){			// munin config
 		print_header(collect_radio_summary($raw,$key['hs']));
 	}
         print_header(collect_netw_summary($raw,null));
-        foreach($hosts as $key => $val){
+        foreach($hostsip as $key => $val){
                 print_header(collect_netw_summary($raw,$key['hs']));
         } 
 	print_header(collect_response_time($raw,null));
-        foreach($hosts as $key => $val){
+        foreach($hostsip as $key => $val){
                 print_header(collect_response_time($raw,$key['hs']));
         }
 
@@ -662,29 +649,28 @@ if (isset($argv[1]) and $argv[1] == "config"){			// munin config
 	print_r(collect_netw_summary($raw,null));
         print_r(collect_response_time($raw,null));
         
-        echo "\n\nHeader-Print test on Controller: \n";
+        echo "\n\nHeader-Print test on Controller: \n\n";
         print_header(collect_radio_summary($raw,null));
-        echo "\n\nData-Print test on Controller: \n";
+        echo "\n\nData-Print test on Controller: \n\n";
         print_data(collect_radio_summary($raw,null));
 
 
 } else {							// munin data
 	print_data(collect_radio_summary($raw,null));
-        foreach($hosts as $key => $val){
+        foreach($hostsip as $key => $val){
                 print_data(collect_radio_summary($raw,$val['hs']));
         }
         print_data(collect_netw_summary($raw,null));
-        foreach($hosts as $key => $val){
+        foreach($hostsip as $key => $val){
                 print_data(collect_netw_summary($raw,$val['hs']));
         }
 	print_data(collect_response_time($raw,null));
-	foreach($hosts as $key => $val){
+	foreach($hostsip as $key => $val){
 		print_data(collect_response_time($raw,$val['hs']));
 	}
 }
 
 
 echo "\n";
-
 ?>
 
