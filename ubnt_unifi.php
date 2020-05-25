@@ -577,13 +577,14 @@ $hosts = $hostsr;
 //$test = collect_response_time($raw, "ap12.wireless.lan");
 //print_r($test);
 
+if(!is_array($raw) /*|| empty($raw)*/ ){     
+        die();
+}
 
 
 
 if (isset($argv[1]) and $argv[1] == "config"){			// munin config
-        if(!is_array($raw) || empty($raw) ){
-                die();
-        }
+
 	print_header(collect_radio_summary($raw,null));
 	foreach($hosts as $key => $val){
 		print_header(collect_radio_summary($raw,$val));
@@ -614,12 +615,12 @@ if (isset($argv[1]) and $argv[1] == "config"){			// munin config
         echo "\tShared_key: ".$shm_key."\n";
         echo "\tShared_mem_key".$shm."\n";
         echo "\tSemaphore_key".$sf."\n";
-        echo "\tFunction_exist(ftok): ".function_exists("ftok");
-        echo "\tFunction_exist(shmop_open): ".function_exists("shmop_open");
-        echo "\tFunction_exist(sem_get): ".function_exists("sem_get");
-        echo "\tFunction_exist(pcntl_fork): ".function_exists("pcntl_fork");
-        echo "\tFunction_exist(pcntl_waitpid): ".function_exists("pcntl_waitpid");
-        echo "\tFunction_exist(json_encode): ".function_exists("json_encode");
+        echo "\tFunction_exist(ftok): ".function_exists("ftok")."\n";
+        echo "\tFunction_exist(shmop_open): ".function_exists("shmop_open")."\n";
+        echo "\tFunction_exist(sem_get): ".function_exists("sem_get")."\n";
+        echo "\tFunction_exist(pcntl_fork): ".function_exists("pcntl_fork")."\n";
+        echo "\tFunction_exist(pcntl_waitpid): ".function_exists("pcntl_waitpid")."\n";
+        echo "\tFunction_exist(json_encode): ".function_exists("json_encode")."\n";
 	echo "\nRAW\n";
 	print_r($raw);
 
@@ -628,14 +629,13 @@ if (isset($argv[1]) and $argv[1] == "config"){			// munin config
 	print_r(collect_netw_summary($raw,null));
         print_r(collect_response_time($raw,null));
         
-        echo "\n Print test on Controller: \n";
+        echo "\n\nHeader-Print test on Controller: \n";
         print_header(collect_radio_summary($raw,null));
+        echo "\n\nData-Print test on Controller: \n";
         print_data(collect_radio_summary($raw,null));
 
+
 } else {							// munin data
-        if(!is_array($raw) || empty($raw) ){
-                die();
-        }
 	print_data(collect_radio_summary($raw,null));
         foreach($hosts as $key => $val){
                 print_data(collect_radio_summary($raw,$val));
