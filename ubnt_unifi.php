@@ -644,15 +644,6 @@ if (isset($argv[1]) and $argv[1] == "config"){			// munin config
         echo "\n-----------------------------------------------------------------------------------------------------\n";
 	echo "\n\nRAW_data: \n";
 	print_r($raw);
-        echo "\n-----------------------------------------------------------------------------------------------------\n";
-	echo "\n\nCollected info on Controller:\n";
-	print_r(collect_radio_summary($raw,null));
-	print_r(collect_netw_summary($raw,null));
-        print_r(collect_response_time($raw,null));
-        echo "\n\nHeader-Print test on Controller: \n\n";
-        print_header(collect_radio_summary($raw,null));
-        echo "\n\nData-Print test on Controller: \n\n";
-        print_data(collect_radio_summary($raw,null));
 
         if(isset($hostsip) && isset($hostsip[0])){
                 echo "\n-----------------------------------------------------------------------------------------------------\n";
@@ -660,6 +651,8 @@ if (isset($argv[1]) and $argv[1] == "config"){			// munin config
 	        print_r(collect_radio_summary($raw,$hostsip[0]['hs']));
                 echo "\n\nHeader-Print test on AP NR.1: \n\n";
                 print_header(collect_radio_summary($raw,$hostsip[0]['hs']));
+                echo "\n\nData-Print test on AP NR.1: \n\n";
+                print_data(collect_radio_summary($raw,$hostsip[0]['hs']));
         }
 
 } else {							// munin data
