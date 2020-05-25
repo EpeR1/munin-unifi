@@ -434,7 +434,7 @@ return $ret;
 
 
 
-
+/********************* START *******************/
 
 
 $hosts = explode(" ", $hosts);
@@ -443,16 +443,14 @@ $mask = @explode('/', $devnetw)[1];
 $hosts2 = array();
 $hostsip = array();
 
-echo "\n netmask \n";
 if($mask != 0 ){
 	for($i=1; $i<(1 << (32 - $mask)); $i++ ){		// fetch ip addresses from given network and mask
 		$hosts2[] = long2ip((ip2long($netw) & ~((1 << (32 - $mask)) -1))  +$i  ) ;
 	}
 }
 
-echo "\nhosts\n";                                                                                                                                   /******* */                    
 foreach($hosts as $key => $val){			// delete addresses which are given by hostname
-        echo "\t$val\n";                                                                                                                        /************ */
+
         $hostsip[$key] = array();
         $hostsip[$key]['hs'] = $val;
         putenv('RES_OPTIONS="retrans:1 retry:1 timeout:1 attempts:1"');   //faster name resolving ?
