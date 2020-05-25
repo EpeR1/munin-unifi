@@ -56,7 +56,7 @@ Edit the **/etc/munin/munin.conf** with the following options:
     [unifi.company.com]   #Unifi Controller hostname
       address 127.0.0.1   #This plugin uses a wirtual munin node on localhost,
       use_node_name no    #but don't need to use the node name.
-      timeout 240         #Timeout, while this plugin can be running.
+      timeout 240         #Timeout, while this plugin can be runned by munin. (whole running time).
 
 
 Edit the **/etc/munin/plugin-conf.d/munin-node**, and use the following configurations:  
@@ -65,7 +65,7 @@ Edit the **/etc/munin/plugin-conf.d/munin-node**, and use the following configur
       timeout           -   Munin-update timeout for this plugin.  
       env.controller    -   The unifi controller hostname/ip.  
       env.devices       -   A "space" separated list of the hostnames or IP addresses of wireless APs.  
-      env.timeout       -   The maximum timeout in milliseconds of SNMP requests. (must enough to get all data!).  
+      env.timeout       -   The maximum timeout in milliseconds for SNMP requests. (must enough to get all data from one AP!).  
       env.retry         -   Number of retry after failed/time out SNMP requets.  
       env.maxproc       -   Maximum nuber of child processes (for SNMP get)
       env.devnetw       -   The network of the APs. (COMMENT IT OUT, IF NOT USED !!!)  
