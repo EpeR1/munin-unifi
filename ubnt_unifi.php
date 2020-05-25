@@ -13,6 +13,7 @@ $timeout = getenv('timeout');
 $retry = getenv('retry');
 $maxproc = getenv('maxproc');
 $devnetw = getenv('devnet');
+$resolvdup = getenv('resolvdup');
 
 $replace_chars = array("\"","\$","@","^","`",",","|","%",";",".","~","(",")","/","\\","{","}",":","?","[","]","=","+","#","!","-",);	// Special chars replace
 
@@ -440,85 +441,113 @@ $hosts = explode(" ", $hosts);
 $netw = @explode('/', $devnetw)[0];
 $mask = @explode('/', $devnetw)[1];
 $hosts2 = array();
+$hostsip = array();
 
+echo "\n netmask \n";
 if($mask != 0 ){
 	for($i=1; $i<(1 << (32 - $mask)); $i++ ){		// fetch ip addresses from given network and mask
 		$hosts2[] = long2ip((ip2long($netw) & ~((1 << (32 - $mask)) -1))  +$i  ) ;
 	}
 }
 
+echo "\nhosts\n";                                                                                                                                   /******* */                    
 foreach($hosts as $key => $val){			// delete addresses which are given by hostname
-	if(in_array(gethostbyname($val), $hosts2)){
-		unset($hosts2[ array_keys($hosts2, gethostbyname($val))[0] ]);
-	}
+        echo "\t$val\n";                                                                                                                        /************ */
+        $hostsip[$key] = array();
+        $hostsip[$key]['hs'] = $val;
+        putenv('RES_OPTIONS="retrans:1 retry:1 timeout:1 attempts:1"');   //faster name resolving ?
+        $hostsip[$key]['ip'] = gethostbyname($val);                     /* Returns unmodified string, when error, or ip input */
 
+        if($hostsip[$key]['ip'] == $hostsip[$key]['hs'] && filter_var($val, FILTER_VALIDATE_IP) == ""){    /* if non ip is returned by gethost  */      
+                $hostsip[$key]['ip'] = "";                                      //Delete, if name resolving error
+        }                                                               
+        
+        if(isset($resolvdup) && $resolvdup == "1"){                     //Clarify duplicated devices
+	        if(in_array($hostsip[$key]['ip'], $hosts2)){
+                        unset($hosts2[ array_keys($hosts2, $hostsip[$key]['ip'])[0] ]);
+	        }
+        }
 }
+$i = count($hostsip);
+foreach($hosts2 as $key2 => $val2){     // Merge hosts into one
+        $hostsip[$i] = array();
+        $hostsip[$i]['hs'] = $val2;
+        $hostsip[$i]['ip'] = $val2;
+        $i++;
+}
+
+print_r($hosts);                                                                                                               /**************** */
+print_r($hosts2);                                                                                                             /**************** */                        
+print_r($hostsip);                                                                                                      /******************** */
 $hosts = array_merge($hosts, $hosts2);
 unset($hosts2);
 
-$numhost = count($hosts);
+echo "\nshm_open\n";                                                                                                  /***************** */
+$numhost = count($hostsip);
 $shm_key = ftok($argv[0], 'c');
 $shm = shmop_open($shm_key, "c", 0640, ceil($numhost/$maxproc)*32768);
 $sf = sem_get($shm_key,1,0640,1);
 $child = array();
 $raw = array();
-$hostsr = $hosts;
-unset($hosts);
-$hostst = array();
+//$hostsr = $hosts;
+$hostsipr = $hostsip;
+//unset($hosts);
+unset($hostsip);
+//$hostst = array();
+$hostsipt = array();
 
-
+echo "\npermutation\n";                                                                                             /*************** */
 for($i=0,$j=0; $i<$numhost; $i++){	//Sorting addresses for child-processes
 	
 	if($j >= $maxproc){		//With permutation
 	    $j = 0;
 	}
-	if(array_key_exists($j, $hostst) === FALSE){
-		$hostst[$j] = array();
+	if(array_key_exists($j, $hostsipt) === FALSE){
+                //$hostst[$j] = array();
+                $hostsipt[$j] = array();
 	}
-
-	$hostst[$j] = array_merge($hostst[$j], array($hostsr[$i]));    //With permutation
+        //$hostst[$j] = array_merge($hostst[$j], array($hostsr[$i]));    //With permutation
+        $hostsipt[$j] = array_merge($hostsipt[$j], array($hostsipr[$i]));    //With permutation
 	$j++;
 }
 
 
 
-
+echo "\nfork\n";                                                                                          /************************ */
 for ($p=0; $p<$maxproc; $p++){		//Starts child processes to retrieve SNMP data.
 	
-	unset($hosts);
-	$hosts = array();
-	if(array_key_exists($p,$hostst)){
-		$hosts = $hostst[$p];
+	unset($hostsip);
+	$hostsip = array();
+	if(array_key_exists($p,$hostsipt)){
+                //$hosts = $hostst[$p];
+                $hostsip = $hostsipt[$p];
 	}
-
 
         $pid = pcntl_fork();
 
         if($pid == -1){
              die('could not fork');
-        }
 
-        else if($pid){			// we are the parent process
+        } else if($pid){			// we are the parent process
                 $child[$p] = $pid;
-        } 
 
-	else {			// child
+        } else {			// child
 		$raw=array();
-		foreach($hosts as $key => $val){			// get raw snmp data from unifi devices
-			if($hosts[$key] == ""){
-				unset($hosts[$key]);
+		foreach($hostsip as $key => $val){			// get raw snmp data from unifi devices
+			if($hostsip[$key]['ip'] == ""){
+				unset($hostsip[$key]);
 			}
-			if($val != "") {
+			if($val['hs'] != "") {
 				$begin = microtime(TRUE);
-				$raw[$val] = @snmp2_real_walk($val, "public", ".1.3.6.1.4.1.41112.1.6.1.2.1", $timeout*1000, $retry ); 		// wl network info
-				//$raw[$val]["response_time"] = abs($begin - microtime(TRUE));							// If we count the time of the first response
-				$raw[$val]["iso.3.6.1.2.1.1.6.0"] = @snmp2_get($val, "public", ".1.3.6.1.2.1.1.6.0", $timeout*1000, $retry ) ;	// location info
-				$raw[$val]["iso.3.6.1.2.1.1.1.0"] = @snmp2_get($val, "public", ".1.3.6.1.2.1.1.1.0", $timeout*1000, $retry ) ;	// descr. info
-				$raw[$val]["response_time"] = abs($begin - microtime(TRUE));  							// Or the time of all responses.
+				$raw[$val['hs']] = @snmp2_real_walk($val['ip'], "public", ".1.3.6.1.4.1.41112.1.6.1.2.1", $timeout*1000, $retry ); 		// wl network info
+				//$raw[$val['hs']]["response_time"] = abs($begin - microtime(TRUE));							// If we count the time of the first response
+				$raw[$val['hs']]["iso.3.6.1.2.1.1.6.0"] = @snmp2_get($val['ip'], "public", ".1.3.6.1.2.1.1.6.0", $timeout*1000, $retry ) ;	// location info
+				$raw[$val['hs']]["iso.3.6.1.2.1.1.1.0"] = @snmp2_get($val['ip'], "public", ".1.3.6.1.2.1.1.1.0", $timeout*1000, $retry ) ;	// descr. info
+				$raw[$val['hs']]["response_time"] = abs($begin - microtime(TRUE));  							// Or the time of all responses.
 			}
-		        if( !isset($raw[$val]["iso.3.6.1.4.1.41112.1.6.1.2.1.1.1"]) ){ // Check if AP is alive
-                                unset($raw[$val]);
-                                unset($hosts[$key]);
+		        if( !isset($raw[$val['hs']]["iso.3.6.1.4.1.41112.1.6.1.2.1.1.1"]) ){ // Check if AP is alive
+                                unset($raw[$val['hs']]);
+                                unset($hostsip[$key]);
 		        }
 			
 			$null="";
@@ -535,8 +564,8 @@ for ($p=0; $p<$maxproc; $p++){		//Starts child processes to retrieve SNMP data.
 	}
 
 }
-unset($hostst);
-unset($hosts);
+unset($hostsipt);
+unset($hostsip);
 
 function numchild($child, $n){	//How many child process is alive
         $l=0;
@@ -548,6 +577,7 @@ function numchild($child, $n){	//How many child process is alive
         return $l;
 }
 
+echo "\nwait\n";                                                                                             /********************* */
 
 while(numchild($child, $maxproc)){	//Receive the raw data segments and wait for child processes
 
@@ -563,13 +593,14 @@ while(numchild($child, $maxproc)){	//Receive the raw data segments and wait for 
                 $raw = @array_merge($raw, @json_decode($ret, true));      
                 shmop_write($shm,"\0\0\0\0\0", 0);
 	}
-	usleep(100);	//Less cpu load
+	usleep(1);	//Less cpu load
 }
 
 sem_remove($sf);
 shmop_delete($shm);
 shmop_close($shm);
-$hosts = $hostsr;
+//$hosts = $hostsr;
+$hostsip = $hostsipr;
 //print_r($raw);
 //print_r($hosts);
 //$test = collect_netw_summary($raw, "ap12.wireless.lan");
@@ -577,25 +608,25 @@ $hosts = $hostsr;
 //$test = collect_response_time($raw, "ap12.wireless.lan");
 //print_r($test);
 
-if(!is_array($raw) /*|| empty($raw)*/ /* */){     
+if(!is_array($raw) /*|| empty($raw)*/){     
         die();
 }
 
-
+echo "\nprocess\n";                                                                             /************************** */
 
 if (isset($argv[1]) and $argv[1] == "config"){			// munin config
 
 	print_header(collect_radio_summary($raw,null));
-	foreach($hosts as $key => $val){
-		print_header(collect_radio_summary($raw,$val));
+	foreach($hostsip as $key => $val){
+		print_header(collect_radio_summary($raw,$key['hs']));
 	}
         print_header(collect_netw_summary($raw,null));
         foreach($hosts as $key => $val){
-                print_header(collect_netw_summary($raw,$val));
+                print_header(collect_netw_summary($raw,$key['hs']));
         } 
 	print_header(collect_response_time($raw,null));
         foreach($hosts as $key => $val){
-                print_header(collect_response_time($raw,$val));
+                print_header(collect_response_time($raw,$key['hs']));
         }
 
 } else if(isset($argv[1]) and $argv[1] == "debug"){
@@ -607,14 +638,14 @@ if (isset($argv[1]) and $argv[1] == "config"){			// munin config
 	echo "\tMaxproc: ".$maxproc."\n";
 	echo "\tDevices_network: ".$devnetw."\n";
         echo "\tDevice_hosts: \n";
-        foreach($hosts as $dgk => $dgv){
-                echo "\t\tIP: ".gethostbyname($dgv)."\tHost: ".$dgv."\n";
+        foreach($hostsip as $key => $val){
+                printf("\t\tIP: %24s\tHost: %24s\n", $val['ip'], $val['hs']);
         }
 
 	echo "\nInternal: \n";
         echo "\tShared_key: ".$shm_key."\n";
-        echo "\tShared_mem_key ".$shm."\n";
-        echo "\tSemaphore_key ".$sf."\n";
+        echo "\tShared_mem_key: ".$shm."\n";
+        echo "\tSemaphore_key: ".$sf."\n";
         echo "\tFunction_exist(ftok): ".function_exists("ftok")."\n";
         echo "\tFunction_exist(shmop_open): ".function_exists("shmop_open")."\n";
         echo "\tFunction_exist(sem_get): ".function_exists("sem_get")."\n";
@@ -640,15 +671,15 @@ if (isset($argv[1]) and $argv[1] == "config"){			// munin config
 } else {							// munin data
 	print_data(collect_radio_summary($raw,null));
         foreach($hosts as $key => $val){
-                print_data(collect_radio_summary($raw,$val));
+                print_data(collect_radio_summary($raw,$val['hs']));
         }
         print_data(collect_netw_summary($raw,null));
         foreach($hosts as $key => $val){
-                print_data(collect_netw_summary($raw,$val));
+                print_data(collect_netw_summary($raw,$val['hs']));
         }
 	print_data(collect_response_time($raw,null));
 	foreach($hosts as $key => $val){
-		print_data(collect_response_time($raw,$val));
+		print_data(collect_response_time($raw,$val['hs']));
 	}
 }
 

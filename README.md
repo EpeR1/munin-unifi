@@ -69,6 +69,7 @@ Edit the **/etc/munin/plugin-conf.d/munin-node**, and use the following configur
       env.retry         -   Number of retry after failed/time out SNMP requets.  
       env.maxproc       -   Maximum nuber of child processes (for SNMP get)
       env.devnetw       -   The network of the APs. (It is expreimental yet.)  
+      env.resolvdup     -   Clarify if Ap is duplicated (Listed via hostname at "devices", and also is in "devnet" network/mask)  
 
   
 For example:
@@ -81,7 +82,7 @@ For example:
        env.timeout 850  
        env.retry 3  
        env.maxproc 32  
-
+       env.resolvdup 1  
 
 
 ### AUTHOR
