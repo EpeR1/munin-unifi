@@ -410,29 +410,30 @@ function collect_response_time($inp, $host){			//Calculates the Roundtrip time a
 		unset($temp);
         } 
         $sum_time = 0;
-        $key = 0;
+        $i = 0;
 	foreach($inp as $key => $val){
-		$ret['head'][$key]['name'] = "ping_".str_replace( array(".", ":"), "_" ,$key);
-		$ret['head'][$key]['label'] = $key;
-		$ret['head'][$key]['draw'] = "LINE1.2";
-		$ret['head'][$key]['info'] = "Response Time";
-		$ret['head'][$key]['type'] = "GAUGE";
-		$ret['head'][$key]['min']  = "0";
+		$ret['head'][$i]['name'] = "ping_".str_replace( array(".", ":"), "_" ,$key);
+		$ret['head'][$i]['label'] = $key;
+		$ret['head'][$i]['draw'] = "LINE1.2";
+		$ret['head'][$i]['info'] = "Response Time";
+		$ret['head'][$i]['type'] = "GAUGE";
+		$ret['head'][$i]['min']  = "0";
 
-		$ret['data'][$key]['name'] = "ping_".str_replace( array(".", ":"), "_" ,$key);
-                $ret['data'][$key]['value'] = round($val["response_time"], 7);        
-                $sum_time += $ret['data'][$key]['value'];
+		$ret['data'][$i]['name'] = "ping_".str_replace( array(".", ":"), "_" ,$key);
+                $ret['data'][$i]['value'] = round($val["response_time"], 7);        
+                $sum_time += $ret['data'][$i]['value'];
+                $i++;
         }
-        $ret['head'][$key+1]['name'] = "ping_average";
-        $ret['head'][$key+1]['label'] = "Average";
-        $ret['head'][$key+1]['draw'] = "LINE1.2";
-        $ret['head'][$key+1]['info'] = "Response Time";
-        $ret['head'][$key+1]['type'] = "GAUGE";
-        $ret['head'][$key+1]['min']  = "0";
+        $ret['head'][$i+1]['name'] = "ping_average";
+        $ret['head'][$i+1]['label'] = "Average";
+        $ret['head'][$i+1]['draw'] = "LINE1.2";
+        $ret['head'][$i+1]['info'] = "Response Time";
+        $ret['head'][$i+1]['type'] = "GAUGE";
+        $ret['head'][$i+1]['min']  = "0";
 
-        if(count($inp) != 0){
-                $ret['data'][$key+1]['value'] = $sum_time/count($inp);  
-                $ret['data'][$key+1]['name'] = "ping_average";
+        if(count($inp) != 0){   //count average
+                $ret['data'][$i+1]['value'] = $sum_time/count($inp);  
+                $ret['data'][$i+1]['name'] = "ping_average";
         }
 
 return $ret;
