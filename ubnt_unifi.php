@@ -373,8 +373,8 @@ return $ret;
 }
 
 
-function collect_response_time($inp,$host){			//Calculates the response_time array from raw data
-        global $controller, $replace_chars, $hosts;
+function collect_response_time($inp, $host){			//Calculates the Roundtrip time array from raw data
+        global $controller, $replace_chars;
         $ret = array();
 
         if(isset($host) and $host !== null and $host != "" ){
@@ -397,13 +397,11 @@ function collect_response_time($inp,$host){			//Calculates the response_time arr
                 $ret['g_vlabel'] = "Roundtrip time (seconds)";
                 $ret['g_category'] = "Wl_ping_all";
                 $ret['g_info'] = "ubnt_wireless";	
-		$ret['g_order'] = '';
-	        foreach($hosts as $key => $val){		//prints the host names on summary
-        		$ret['g_order'] .= "unifi_ping_".str_replace( array(".", ":"), "_" ,$val)." ";
+		$ret['g_order'] = 'unifi_ping_average';
+	        foreach($inp as $key => $val){		//prints the host names on summary
+        		$ret['g_order'] .= "unifi_ping_".str_replace( array(".", ":"), "_" ,$key)." ";
         	}
 	}
-
-
 
 	if(isset($host) and $host !== null and $host != "" ){   // chunks the raw data to the current AP's data only
 		$temp = $inp;
@@ -411,16 +409,9 @@ function collect_response_time($inp,$host){			//Calculates the response_time arr
 		$inp = array($host => $temp[$host]);
 		unset($temp);
         } 
-
-
+        $sum_time = 0;
+        $key = 0;
 	foreach($inp as $key => $val){
-
-//		if( (isset($host) and $host !== null and $host != "") ){	//Replace label's text on AP's graph
-//			$key = "time";
-//			$label= "Response Time";
-//		} else {
-//			$label = $key;
-//		}
 		$ret['head'][$key]['name'] = "ping_".str_replace( array(".", ":"), "_" ,$key);
 		$ret['head'][$key]['label'] = $key;
 		$ret['head'][$key]['draw'] = "LINE1.2";
@@ -429,8 +420,20 @@ function collect_response_time($inp,$host){			//Calculates the response_time arr
 		$ret['head'][$key]['min']  = "0";
 
 		$ret['data'][$key]['name'] = "ping_".str_replace( array(".", ":"), "_" ,$key);
-		$ret['data'][$key]['value'] = round($val["response_time"], 7);        
-	}
+                $ret['data'][$key]['value'] = round($val["response_time"], 7);        
+                $sum_time += $ret['data'][$key]['value'];
+        }
+        $ret['head'][$key+1]['name'] = "ping_average";
+        $ret['head'][$key+1]['label'] = "Average";
+        $ret['head'][$key+1]['draw'] = "LINE1.2";
+        $ret['head'][$key+1]['info'] = "Response Time";
+        $ret['head'][$key+1]['type'] = "GAUGE";
+        $ret['head'][$key+1]['min']  = "0";
+
+        if(count($inp) != 0){
+                $ret['data'][$key+1]['value'] = $sum_time/count($inp);  
+                $ret['data'][$key+1]['name'] = "ping_average";
+        }
 
 return $ret;
 }
