@@ -613,8 +613,8 @@ if (isset($argv[1]) and $argv[1] == "config"){			// munin config
 
 	echo "\nInternal: \n";
         echo "\tShared_key: ".$shm_key."\n";
-        echo "\tShared_mem_key".$shm."\n";
-        echo "\tSemaphore_key".$sf."\n";
+        echo "\tShared_mem_key ".$shm."\n";
+        echo "\tSemaphore_key ".$sf."\n";
         echo "\tFunction_exist(ftok): ".function_exists("ftok")."\n";
         echo "\tFunction_exist(shmop_open): ".function_exists("shmop_open")."\n";
         echo "\tFunction_exist(sem_get): ".function_exists("sem_get")."\n";
