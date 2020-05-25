@@ -19,6 +19,9 @@ $replace_chars = array("\"","\$","@","^","`",",","|","%",";",".","~","(",")","/"
 
 function print_header($inp){ // prints Munin-config data from processed data array
 
+        if(!array_key_exists('head', $inp) or !array_key_exists('g_multi', $inp)){
+                return;
+        }
 	$cf  = "multigraph unifi_".$inp['g_multi']."\n";
         $cf .= "host_name ".$inp['g_controller']."\n";
         $cf .= "graph_title ".$inp['g_title']."\n";
@@ -603,15 +606,15 @@ if (isset($argv[1]) and $argv[1] == "config"){			// munin config
 
 	print_header(collect_radio_summary($raw,null));
 	foreach($hostsip as $key => $val){
-		print_header(collect_radio_summary($raw,$key['hs']));
+		print_header(collect_radio_summary($raw,$val['hs']));
 	}
         print_header(collect_netw_summary($raw,null));
         foreach($hostsip as $key => $val){
-                print_header(collect_netw_summary($raw,$key['hs']));
+                print_header(collect_netw_summary($raw,$val['hs']));
         } 
 	print_header(collect_response_time($raw,null));
         foreach($hostsip as $key => $val){
-                print_header(collect_response_time($raw,$key['hs']));
+                print_header(collect_response_time($raw,$val['hs']));
         }
 
 } else if(isset($argv[1]) and $argv[1] == "debug"){
@@ -626,7 +629,7 @@ if (isset($argv[1]) and $argv[1] == "config"){			// munin config
         foreach($hostsip as $key => $val){
                 printf("\t\tIP: %24s\tHost: %24s\n", $val['ip'], $val['hs']);
         }
-
+        
 	echo "\nInternal: \n";
         echo "\tShared_key: ".$shm_key."\n";
         echo "\tShared_mem_key: ".$shm."\n";
@@ -638,20 +641,26 @@ if (isset($argv[1]) and $argv[1] == "config"){			// munin config
         echo "\tFunction_exist(pcntl_waitpid): ".function_exists("pcntl_waitpid")."\n";
         echo "\tFunction_exist(json_encode): ".function_exists("json_encode")."\n";
         echo "\tFunction_exist(snmp2_get): ".function_exists("snmp2_get")."\n";
-
+        echo "\n-----------------------------------------------------------------------------------------------------\n";
 	echo "\n\nRAW_data: \n";
 	print_r($raw);
-
-	echo "\nCollected infos on Controller:\n";
+        echo "\n-----------------------------------------------------------------------------------------------------\n";
+	echo "\n\nCollected info on Controller:\n";
 	print_r(collect_radio_summary($raw,null));
 	print_r(collect_netw_summary($raw,null));
         print_r(collect_response_time($raw,null));
-        
         echo "\n\nHeader-Print test on Controller: \n\n";
         print_header(collect_radio_summary($raw,null));
         echo "\n\nData-Print test on Controller: \n\n";
         print_data(collect_radio_summary($raw,null));
 
+        if(isset($hostsip) && isset($hostsip[0])){
+                echo "\n-----------------------------------------------------------------------------------------------------\n";
+                echo "\n\nCollected info on AP NR.1:\n";
+	        print_r(collect_radio_summary($raw,$hostsip[0]['hs']));
+                echo "\n\nHeader-Print test on AP NR.1: \n\n";
+                print_header(collect_radio_summary($raw,$hostsip[0]['hs']));
+        }
 
 } else {							// munin data
 	print_data(collect_radio_summary($raw,null));
