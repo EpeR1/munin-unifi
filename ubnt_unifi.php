@@ -424,12 +424,14 @@ function collect_response_time($inp, $host){			//Calculates the Roundtrip time a
                 $sum_time += $ret['data'][$i]['value'];
                 $i++;
         }
-        $ret['head'][$i+1]['name'] = "ping_average";
-        $ret['head'][$i+1]['label'] = "Average";
-        $ret['head'][$i+1]['draw'] = "LINE1.2";
-        $ret['head'][$i+1]['info'] = "Response Time";
-        $ret['head'][$i+1]['type'] = "GAUGE";
-        $ret['head'][$i+1]['min']  = "0";
+        if($host == null){   //count average
+                $ret['head'][$i+1]['name'] = "ping_average";
+                $ret['head'][$i+1]['label'] = "Average";
+                $ret['head'][$i+1]['draw'] = "LINE1.2";
+                $ret['head'][$i+1]['info'] = "Response Time";
+                $ret['head'][$i+1]['type'] = "GAUGE";
+                $ret['head'][$i+1]['min']  = "0";
+        }
 
         if(count($inp) != 0 && $host == null){   //count average
                 $ret['data'][$i+1]['value'] = $sum_time/count($inp);  
