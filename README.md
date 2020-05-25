@@ -3,6 +3,10 @@
 * Requires:  
     * Enabled SNMP on AP's.  
     * Network access from munin-server to AP's network.  
+    * PHP 7.0 or above
+    * PHP SNMP module
+    * PHP JSON module
+    * Debian(9+): `sudo apt-get install php php-cgi php-snmp php-json`
 * It can use php child-processes to get responses faster.  
 * If snmp oids are different on your product, you can use  
  `snmpwalk -v2c -c public ap01.network.lan 'iso.3.6.1.4.1.41112'` command to clarify them.  

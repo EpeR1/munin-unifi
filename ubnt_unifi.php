@@ -577,12 +577,13 @@ $hosts = $hostsr;
 //$test = collect_response_time($raw, "ap12.wireless.lan");
 //print_r($test);
 
-if(!is_array($raw)){
-    die();
-}
+
 
 
 if (isset($argv[1]) and $argv[1] == "config"){			// munin config
+        if(!is_array($raw) || empty($raw) ){
+                die();
+        }
 	print_header(collect_radio_summary($raw,null));
 	foreach($hosts as $key => $val){
 		print_header(collect_radio_summary($raw,$val));
@@ -604,20 +605,37 @@ if (isset($argv[1]) and $argv[1] == "config"){			// munin config
 	echo "\tRetry: ".$retry."\n";
 	echo "\tMaxproc: ".$maxproc."\n";
 	echo "\tDevices_network: ".$devnetw."\n";
-	echo "\tDevice_hosts: \n";
-	print_r($hosts);
+        echo "\tDevice_hosts: \n";
+        foreach($hosts as $dgk => $dgv){
+                echo "\t\tIP: ".gethostbyname($dgv)."\tHost: ".$dgv."\n";
+        }
 
 	echo "\nInternal: \n";
-	echo "\tShared_mem_key: ".$shm_key."\n";
+        echo "\tShared_key: ".$shm_key."\n";
+        echo "\tShared_mem_key".$shm."\n";
+        echo "\tSemaphore_key".$sf."\n";
+        echo "\tFunction_exist(ftok): ".function_exists("ftok");
+        echo "\tFunction_exist(shmop_open): ".function_exists("shmop_open");
+        echo "\tFunction_exist(sem_get): ".function_exists("sem_get");
+        echo "\tFunction_exist(pcntl_fork): ".function_exists("pcntl_fork");
+        echo "\tFunction_exist(pcntl_waitpid): ".function_exists("pcntl_waitpid");
+        echo "\tFunction_exist(json_encode): ".function_exists("json_encode");
 	echo "\nRAW\n";
 	print_r($raw);
 
-	echo "\nController:\n";
+	echo "\nCollected infos on Controller:\n";
 	print_r(collect_radio_summary($raw,null));
 	print_r(collect_netw_summary($raw,null));
-	print_r(collect_response_time($raw,null));
+        print_r(collect_response_time($raw,null));
+        
+        echo "\n Print test on Controller: \n";
+        print_header(collect_radio_summary($raw,null));
+        print_data(collect_radio_summary($raw,null));
 
 } else {							// munin data
+        if(!is_array($raw) || empty($raw) ){
+                die();
+        }
 	print_data(collect_radio_summary($raw,null));
         foreach($hosts as $key => $val){
                 print_data(collect_radio_summary($raw,$val));
