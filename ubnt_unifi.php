@@ -587,7 +587,7 @@ while(numchild($child, $maxproc)){	//Receive the raw data segments and wait for 
                 $raw = @array_merge($raw, @json_decode($ret, true));      
                 shmop_write($shm,"\0\0\0\0\0", 0);
 	}
-	usleep(1);	//Less cpu load
+	usleep(100);	//Less cpu load
 }
 
 sem_remove($sf);
