@@ -577,7 +577,7 @@ $hosts = $hostsr;
 //$test = collect_response_time($raw, "ap12.wireless.lan");
 //print_r($test);
 
-if(!is_array($raw) /*|| empty($raw)*/ ){     
+if(!is_array($raw) /*|| empty($raw)*/ /* */){     
         die();
 }
 
@@ -621,7 +621,9 @@ if (isset($argv[1]) and $argv[1] == "config"){			// munin config
         echo "\tFunction_exist(pcntl_fork): ".function_exists("pcntl_fork")."\n";
         echo "\tFunction_exist(pcntl_waitpid): ".function_exists("pcntl_waitpid")."\n";
         echo "\tFunction_exist(json_encode): ".function_exists("json_encode")."\n";
-	echo "\nRAW\n";
+        echo "\tFunction_exist(snmp2_get): ".function_exists("snmp2_get")."\n";
+
+	echo "\n\nRAW_data: \n";
 	print_r($raw);
 
 	echo "\nCollected infos on Controller:\n";
