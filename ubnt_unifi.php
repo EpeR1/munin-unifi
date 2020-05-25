@@ -431,7 +431,7 @@ function collect_response_time($inp, $host){			//Calculates the Roundtrip time a
         $ret['head'][$i+1]['type'] = "GAUGE";
         $ret['head'][$i+1]['min']  = "0";
 
-        if(count($inp) != 0){   //count average
+        if(count($inp) != 0 && $host == null){   //count average
                 $ret['data'][$i+1]['value'] = $sum_time/count($inp);  
                 $ret['data'][$i+1]['name'] = "ping_average";
         }
