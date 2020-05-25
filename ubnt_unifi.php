@@ -397,7 +397,7 @@ function collect_response_time($inp, $host){			//Calculates the Roundtrip time a
                 $ret['g_vlabel'] = "Roundtrip time (seconds)";
                 $ret['g_category'] = "Wl_ping_all";
                 $ret['g_info'] = "ubnt_wireless";	
-		$ret['g_order'] = 'unifi_ping_average';
+		$ret['g_order'] = "unifi_ping_average"." ";
 	        foreach($inp as $key => $val){		//prints the host names on summary
         		$ret['g_order'] .= "unifi_ping_".str_replace( array(".", ":"), "_" ,$key)." ";
         	}
