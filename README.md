@@ -68,7 +68,7 @@ Edit the **/etc/munin/plugin-conf.d/munin-node**, and use the following configur
       env.timeout       -   The maximum timeout in milliseconds of SNMP requests. (must enough to get all data!).  
       env.retry         -   Number of retry after failed/time out SNMP requets.  
       env.maxproc       -   Maximum nuber of child processes (for SNMP get)
-      env.devnetw       -   The network of the APs. (It is expreimental yet.)  
+      env.devnetw       -   The network of the APs. (COMMENT IT OUT, IF NOT USED !!!)  
       env.resolvdup     -   Clarify if Ap is duplicated (Listed via hostname at "devices", and also is in "devnet" network/mask)  
 
   
@@ -78,12 +78,25 @@ For example:
        timeout 240  
        env.controller unifi.company.com
        env.devices ap01.wl.company.lan ap02.wl.company.lan ap03.wl.company.lan 10.10.1.6 10.10.1.7 10.10.1.8   
-       env.devnetw 10.10.1.10/24  
+      #env.devnetw 10.10.1.10/24  
        env.timeout 850  
        env.retry 3  
        env.maxproc 32  
        env.resolvdup 1  
 
+
+### DEBUG Checklist  
+
+* Munin output with: `munin-run ubnt_unifi` command.  
+* Munin configuration with: `munin-run ubnt_unifi config` command.  
+* Debug information with: `munin-run ubnt_unifi debug` command.  
+* Is there a direct connection (Routing/SNMP_port: 161) between munin-server and Access Points?  
+* Is "php-json" and "php-snmp" installed?
+* Is SNMP enabled in Unifi configuration, or on Access Points?
+* Try ping APs from munin server.  
+
+
+---
 
 ### AUTHOR
 
