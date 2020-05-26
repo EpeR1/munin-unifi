@@ -443,7 +443,7 @@ return $ret;
 
 
 
-/********************* START *******************/
+/******************************** START ********************************/
 
 
 $hosts = explode(" ", $hosts);
@@ -510,6 +510,7 @@ for($i=0,$j=0; $i<$numhost; $i++){	//Sorting addresses for child-processes
 }
 
 
+/******************************** Child Processes ********************************/
 
 for ($p=0; $p<$maxproc; $p++){		//Starts child processes to retrieve SNMP data.
 	
@@ -574,7 +575,7 @@ function numchild($child, $n){	//How many child process is alive
         return $l;
 }
 
-
+/******************************** Wait for childs ********************************/
 while(numchild($child, $maxproc)){	//Receive the raw data segments and wait for child processes
 
 	for($p=0; $p<$maxproc; $p++){
@@ -603,10 +604,10 @@ $hostsip = $hostsipr;
 //$test = collect_response_time($raw, "ap12.wireless.lan");
 //print_r($test);
 
+/******************************** Print the result ********************************/
 if(!is_array($raw) /*|| empty($raw)*/){     
         die();
 }
-
 
 if (isset($argv[1]) and $argv[1] == "config"){			// munin config
 

@@ -7,16 +7,16 @@
     * PHP SNMP module
     * PHP JSON module
     * Debian(9+): `sudo apt-get install php php-cgi php-snmp php-json`
+    * Installed munin instance `(sudo apt-get install munin)`
 * It can use php child-processes to get responses faster.  
-* If snmp oids are different on your product, you can use  
- `snmpwalk -v2c -c public ap01.network.lan 'iso.3.6.1.4.1.41112'` command to clarify them.  
-* Official UBNT Unifi SNMP MIBs are available here: [Forum](https://community.ui.com/questions/MIBs-/a0365341-b14f-441b-9484-fd4be414d281) 
-* Tested with: AP-AC-PRO (up to now).
+* Tested with: Ubiquiti Unifi AP-AC-PRO and Debian 9, Ubuntu 18.04  
 
 
 ## Usage 
-unifi_munin - Munin plugin to monitor UBNT unifi wireless APs
+unifi_munin - Munin plugin to monitor UBNT unifi wireless APs  
+(And also makes graphs for all access points, one by one.)  
 
+Summary graphs:  
 Number of Clients  
 ![munin](http://git.bmrg.hu/images/munin-unifi.git/munin-ssid.png)  
 
@@ -24,7 +24,9 @@ Network Usage
 ![munin](http://git.bmrg.hu/images/munin-unifi.git/munin-netw.png)  
 
 Ap-response time  
-![munin](http://git.bmrg.hu/images/munin-unifi.git/munin-ping.png)
+![munin](http://git.bmrg.hu/images/munin-unifi.git/munin-ping.png)  
+
+
 
 
 ## Installing on Debian
@@ -53,9 +55,9 @@ Ap-response time
 
 Edit the **/etc/munin/munin.conf** with the following options:  
 
-    [unifi.company.com]   #Unifi Controller hostname
-      address 127.0.0.1   #This plugin uses a wirtual munin node on localhost,
-      use_node_name no    #but don't need to use the node name.
+    [unifi.company.com]   #Unifi Controller hostname/ip.
+      address 127.0.0.1   #Which munin-node runs this plugin? (Default: local node, as virtual),
+      use_node_name no    #Always don't need to use the node name. (This plugin makes a virtual node)
       timeout 240         #Timeout, while this plugin can be runned by munin. (whole running time).
 
 
@@ -63,7 +65,7 @@ Edit the **/etc/munin/plugin-conf.d/munin-node**, and use the following configur
 
     [ubnt_unifi]   
       timeout           -   Munin-update timeout for this plugin.  
-      env.controller    -   The unifi controller hostname/ip.  
+      env.controller    -   The unifi controller hostname/ip.  (Must be same as above!)
       env.devices       -   A "space" separated list of the hostnames or IP addresses of wireless APs.  
       env.timeout       -   The maximum timeout in milliseconds for SNMP requests. (must enough to get all data from one AP!).  
       env.retry         -   Number of retry after failed/time out SNMP requets.  
@@ -88,15 +90,19 @@ For example:
 ### DEBUG Checklist  
 
 * Munin output with: `munin-run ubnt_unifi` command.  
-* Munin configuration with: `munin-run ubnt_unifi config` command.  
+* Graph configuration with: `munin-run ubnt_unifi config` command.  
 * Debug information with: `munin-run ubnt_unifi debug` command.  
+* Is **[controller_name]**, (in munin.conf) **same** as **env.controller** (in plugin-conf.d/munin-node) ?
+* Query the runner munin node with telnet eg: `telnet localhost 4949` , after connect: `fetch ubnt_unifi`
+* Is `php-json` and `php-snmp` installed?  
+* Try `snmpwalk -v2c -c public ap01.network.lan 'iso.3.6.1.4.1.41112'` command on munin server.  
+ (May need `>> sudo apt-get install snmp` before, on Debian server.)  
+* Is SNMP enabled in Unifi configuration, or on Access Points?  
 * Is there a direct connection (Routing/SNMP_port: 161) between munin-server and Access Points?  
-* Is "php-json" and "php-snmp" installed?
-* Is SNMP enabled in Unifi configuration, or on Access Points?
 * Try ping APs from munin server.  
 
 
----
+-------
 
 ### AUTHOR
 
