@@ -64,10 +64,10 @@ Edit the **/etc/munin/munin.conf** with the following options:
 Edit the **/etc/munin/plugin-conf.d/munin-node**, and use the following configurations:  
 
     [ubnt_unifi]   
-      timeout           -   Munin-update timeout for this plugin.  
+      timeout           -   Timeout (only) for munin-update command.  
       env.controller    -   The unifi controller hostname/ip.  (Must be same as above!)
       env.devices       -   A "space" separated list of the hostnames or IP addresses of wireless APs.  
-      env.timeout       -   The maximum timeout in milliseconds for SNMP requests. (must enough to get all data from one AP!).  
+      env.timeout       -   The maximum timeout in milliseconds (only) for SNMP requests. (must enough to get all data from one AP!).  
       env.retry         -   Number of retry after failed/time out SNMP requets.  
       env.maxproc       -   Maximum nuber of child processes (for SNMP get)
       env.devnetw       -   The network of the APs. (COMMENT IT OUT, IF NOT USED !!!)  
@@ -86,6 +86,11 @@ For example:
        env.maxproc 32  
        env.resolvdup 1  
 
+### Known issues  
+
+* If there are dead (unresolvable) hostnames in `env.devices` list, the name resolution, will slow down, and running time will significantly increasing, due PHP's gethostbyname() problem. (A problematic name resulotion can take up to 5-30 seconds.)  
+* Also, if name resolution is not working on munin-node side, it will causes slowing.  
+* The unusable/dead ip addresses in the env.devnetw network, will also causes a little slowing, but you can compensate it with `env.timeout` and `env.maxproc` parameters.  
 
 ### DEBUG Checklist  
 
